@@ -8,3 +8,4 @@ apt install python3-pip -y
 # Install ansible
 python3 -m pip install --user ansible
 export PATH=$PATH:/root/.local/bin
+

@@ -12,7 +12,16 @@ build:
 
 dev:
 	docker run \
+		-it \
+		-v $(PWD)/myubuntuv/root/.zsh_history:/root/.zsh_history \
 		--name dev \
+		myubuntu
+
+dev_private:
+	docker run \
+		--name devp \
+		-v $(pwd)/dotfiles.private:/root/dotfiles.private:ro \
+		-v myubuntuv:/ \
 		-it myubuntu
 
 exec:
