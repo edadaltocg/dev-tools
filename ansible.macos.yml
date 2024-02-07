@@ -1,0 +1,136 @@
+- name: Bootstrap development environment (MacOS)
+  hosts: localhost
+
+  tasks:
+    - name: Make sure homebrew bin is in path
+      ansible.builtin.lineinfile:
+        path: /etc/paths
+        state: present
+        line: "/opt/homebrew/bin"
+      become: true
+      become_user: root
+      tags:
+        - packages
+
+    - name: "add custom homebrew repos"
+      community.general.homebrew_tap:
+        name: [homebrew/cask-versions]
+      tags:
+        - packages
+
+    - name: Install core packages via brew casks
+      community.general.homebrew_cask:
+        name: "{{ item }}"
+      ignore_errors: yes
+      with_items:
+        - docker
+        - figma
+        - google-chrome
+        - google-cloud-sdk
+        - alacritty
+        - kindle
+        - ngrok
+        - slack
+        - vlc
+        - zoom
+        - google-drive
+        - firefox
+        - notion
+        - discord
+        - skype
+        - spotify
+        - nordvpn
+      tags:
+        - core
+
+    - name: "Install homebrew packages"
+      community.general.homebrew:
+        name:
+          [
+            "git",
+            "tmux",
+            "neovim",
+            "unzip",
+            "coreutils",
+            "curl",
+            "wget",
+            "fzf",
+            "htop",
+            "imagemagick@6",
+            "ffmpeg",
+            "postgresql",
+            "redis",
+            "sqlite3",
+            "watchman",
+            "zlib",
+            "zsh",
+            "httpie",
+            "rsync",
+            "bat",
+            "node",
+            "go",
+          ]
+        state: present
+        update_homebrew: yes
+      tags:
+        - install
+
+    - name: Get the path to ZSH
+      become: false
+      local_action: command which zsh
+      register: zsh_path
+      tags:
+        - packages
+
+    - name: "Ensure homebrew zsh is in allowed shells"
+      lineinfile:
+        path: /etc/shells
+        line: "{{ zsh_path.stdout }}"
+      become: true
+      tags:
+        - packages
+
+    - name: Install Oh My ZSH
+      shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+      args:
+        creates: "/Users/{{ lookup('env', 'USER') }}/.oh-my-zsh"
+      tags:
+        - packages
+
+    - name: Set ZSH as the default shell
+      shell: chsh -s $(which zsh) {{ lookup('env', 'USER') }}
+      become: true
+      tags:
+        - packages
+
+    - name: "Setup zsh plugins (autosuggestions)"
+      git:
+        repo: https://github.com/zsh-users/zsh-autosuggestions.git
+        dest: ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+        version: master
+        accept_hostkey: yes
+      tags:
+        - configuration
+
+    - name: "Setup zsh plugins (synthax  highlighting)"
+      git:
+        repo: https://github.com/zsh-users/zsh-syntax-highlighting.git
+        dest: ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+        version: master
+        accept_hostkey: yes
+      tags:
+        - configuration
+
+    - name: "Setup zsh plugins (vi mode)"
+      git:
+        repo: https://github.com/jeffreytse/zsh-vi-mode.git
+        dest: ~/.oh-my-zsh/custom/plugins/zsh-vi-mode
+        version: master
+        accept_hostkey: yes
+      tags:
+        - configuration
+
+    - name: Pull Docker image
+      shell: docker pull ubuntu:latest
+      tags:
+        - docker

@@ -1,0 +1,94 @@
+- name: Bootstrap development environment (Ubuntu)
+  hosts: localhost
+  vars:
+    - go_version: 1.21.4
+
+  tasks:
+    - name: Update apt and install required system packages
+      apt:
+        pkg:
+          - git
+          - tmux
+          - neovim
+          - curl
+          - wget
+          - zsh
+          - rsync
+          - git-lfs
+          - nodejs
+          - openssl
+        state: latest
+        update_cache: true
+      tags:
+        - packages
+
+    - name: Get the path to ZSH
+      become: false
+      local_action: command which zsh
+      register: zsh_path
+      tags:
+        - packages
+
+    - name: Install Oh My ZSH
+      shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+      args:
+        creates: /root/.oh-my-zsh
+      tags:
+        - packages
+
+    - name: Set ZSH as the default shell
+      shell: chsh -s $(which zsh) root
+      become: true
+      tags:
+        - packages
+
+    - name: Setup zsh plugins (autosuggestions)
+      git:
+        repo: https://github.com/zsh-users/zsh-autosuggestions.git
+        dest: /root/.oh-my-zsh/plugins/zsh-autosuggestions
+        version: master
+        accept_hostkey: yes
+      tags:
+        - configuration
+
+    - name: Setup zsh plugins (synthax  highlighting)
+      git:
+        repo: https://github.com/zsh-users/zsh-syntax-highlighting.git
+        dest: /root/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+        version: master
+        accept_hostkey: yes
+      tags:
+        - configuration
+
+    - name: Setup zsh plugins (vi mode)
+      git:
+        repo: https://github.com/jeffreytse/zsh-vi-mode.git
+        dest: /root/.oh-my-zsh/custom/plugins/zsh-vi-mode
+        version: master
+        accept_hostkey: yes
+      tags:
+        - configuration
+
+    - name: Download go tar file
+      command: wget https://go.dev/dl/go{{go_version}}.linux-amd64.tar.gz
+
+    - name: Delete previous installation
+      command: rm -rf /usr/local/go
+      become: true
+
+    - name: Extract and move new go folder to /usr/local
+      command: tar -C /usr/local -xzf go{{go_version}}.linux-amd64.tar.gz
+      become: true
+
+    - name: Delete downloaded tar file
+      shell: rm -rf go{{go_version}}.linux-amd64.tar.gz*
+
+    - name: Add go binary path to ~/.profile
+      lineinfile:
+        path: ~/.profile
+        line: "export PATH=$PATH:/usr/local/go/bin:$GOPATH/bin"
+        create: true
+        state: present
+
+    - name: Source updated profile and test go version
+      shell: . ~/.profile && go version
