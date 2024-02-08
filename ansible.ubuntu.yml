@@ -3,6 +3,7 @@
 
   tasks:
     - name: Update apt and install required system packages
+      become: true
       apt:
         pkg:
           - git
@@ -16,7 +17,14 @@
           - openssl
           - make
           - software-properties-common
+          - texlive
           - texlive-latex-extra
+          - texlive-fonts-extra
+          - texlive-science
+          - latexmk
+          - xclip
+          - biber
+          - xdotool
           - ca-certificates
           - gnupg
           - build-essential
@@ -58,10 +66,17 @@
           - strace
           - manpages
           - manpages-dev
+          - stow
+          - zathura
         state: latest
         update_cache: true
       tags:
         - packages
+
+    - name: Install Python packages
+      shell: python3 -m pip install requests
+      tags:
+        - python
 
     - name: Get the path to ZSH
       become: false
@@ -73,7 +88,7 @@
     - name: Install Oh My ZSH
       shell: sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
       args:
-        creates: /root/.oh-my-zsh
+        creates: /home/dadalto/.oh-my-zsh
       tags:
         - packages
 
@@ -86,7 +101,7 @@
     - name: Setup zsh plugins (autosuggestions)
       git:
         repo: https://github.com/zsh-users/zsh-autosuggestions.git
-        dest: /root/.oh-my-zsh/plugins/zsh-autosuggestions
+        dest: /home/dadalto/.oh-my-zsh/plugins/zsh-autosuggestions
         version: master
         accept_hostkey: yes
       tags:
@@ -95,34 +110,14 @@
     - name: Setup zsh plugins (synthax  highlighting)
       git:
         repo: https://github.com/zsh-users/zsh-syntax-highlighting.git
-        dest: /root/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+        dest: /home/dadalto/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
         version: master
         accept_hostkey: yes
       tags:
         - configuration
 
-    - name: check if cargo is installed
-      shell: command -v cargo
-      register: cargo_exists
-      ignore_errors: yes
-
-    - name: Download Installer
-      when: cargo_exists is failed
-      get_url:
-        url: https://sh.rustup.rs
-        dest: /tmp/sh.rustup.rs
-        mode: "0755"
-        force: "yes"
-      tags:
-        - rust
-
-    - name: install rust/cargo
-      when: cargo_exists is failed
-      shell: /tmp/sh.rustup.rs -y
-      tags:
-        - rust
-
     - name: Install neovim 0.8.0+
+      become: true
       shell: |
         add-apt-repository ppa:neovim-ppa/unstable -y
         apt update -y
@@ -139,10 +134,13 @@
     - name: Install LunarVim
       shell: |
         curl https://raw.githubusercontent.com/lunarvim/lunarvim/master/utils/installer/install.sh > /tmp/install.sh
+        echo $PATH
+        echo $HOME
         bash /tmp/install.sh -y
-        /root/.local/bin/lvim --headless "+Lazy! sync" +qa
+        /home/dadalto/.local/bin/lvim --headless "+Lazy! sync" +qa
 
     - name: Install node and npm
+      become: true
       shell: |
         mkdir -p /etc/apt/keyrings
         curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg

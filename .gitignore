@@ -1,4 +1,5 @@
-dotfiles.private
-.env
 .DS_Store
-myubuntuv
+dotfiles.private
+/v
+/projects
+

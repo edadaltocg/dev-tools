@@ -4,25 +4,24 @@ install_macos:
 ansible_macos:
 	ansible-playbook --ask-become-pass ./ansible.macos.yml
 
-.PHONY clone:
-	git clone https://github.com/edadaltocg/dotfiles.git
+clone:
+	git clone https://github.com/edadaltocg/dotfiles.private.git
 
 build:
-	docker build -t myubuntu .
+	docker build --progress=plain -t dev-image .
 
-dev:
+run:
 	docker run \
 		-it \
-		-v $(PWD)/myubuntuv/root/.zsh_history:/root/.zsh_history \
+		-v $(PWD)/v/home/dadalto/.zsh_history:/home/dadalto/.zsh_history \
+		-v $(PWD)/projects:/home/dadalto/projects \
+		-v $(PWD)/dotfiles:/home/dadalto/dotfiles \
+		-v $(PWD)/dotfiles.private:/home/dadalto/dotfiles.private \
 		--name dev \
-		myubuntu
+		dev-image
 
-dev_private:
-	docker run \
-		--name devp \
-		-v $(pwd)/dotfiles.private:/root/dotfiles.private:ro \
-		-v myubuntuv:/ \
-		-it myubuntu
+start:
+	docker start dev
 
 exec:
 	docker exec -it dev /bin/zsh
@@ -35,5 +34,7 @@ all:
 	@make clone
 	@make clean
 	@make build 
-	@make dev
- 
+	@make run
+
+compose_up:
+	docker compose run dev dev id

@@ -1,11 +1,17 @@
 #!/bin/bash
-apt update
-apt -y upgrade
+export USERNAME="$USER"
+export PATH="$PATH:/root/.local/bin"
+export PATH="$PATH:$HOME/.local/bin"
+export PATH="$PATH:$HOME/.cargo/env"
+export PATH="$PATH:root/.cargo/env"
+sudo apt update
+sudo apt -y upgrade
 # Install git
-apt install git -y
+sudo apt install git -y
 # Install the python3-pip package
-apt install python3-pip -y
+sudo apt install python3-pip -y
 # Install ansible
+python3 -m pip install -r requirements.txt
 python3 -m pip install --user ansible
-export PATH=$PATH:/root/.local/bin
+ansible-playbook ./ansible.ubuntu.yml
 
