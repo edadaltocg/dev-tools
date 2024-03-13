@@ -28,7 +28,7 @@ RUN apt-get update \
 RUN apt-get install --no-install-recommends -y git procps stow
 
 COPY common-debian.sh /tmp/library-scripts/
-RUN apt-get update && bash /tmp/library-scripts/common-debian.sh 
+RUN apt-get update && bash /tmp/library-scripts/common-debian.sh
 
 ENV GOROOT=/usr/local/go \
   GOPATH=/go
@@ -69,6 +69,8 @@ RUN stow -v -t ${HOME} -d .config/ -S github-copilot
 WORKDIR ${HOME}
 RUN sudo chown -R ${USERNAME} ${HOME}
 RUN bash install.ubuntu.sh
+
+RUN git clone https://github.com/ingydotnet/git-subrepo
 
 # Clean up
 RUN sudo apt-get autoremove -y \

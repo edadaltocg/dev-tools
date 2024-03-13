@@ -68,6 +68,7 @@
           - manpages-dev
           - stow
           - zathura
+          - protobuf-compiler
         state: latest
         update_cache: true
       tags:
@@ -148,5 +149,5 @@
         apt update
         apt install nodejs
 
-    - name: Install protoc
-      shell: echo "TODO v0.14.2 GO111MODULE=on go install golang.org/x/tools/gopls@v0.14.2"
+    - name: Install pyenv
+      shell: curl https://pyenv.run | bash

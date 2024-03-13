@@ -4,7 +4,7 @@ install_macos:
 ansible_macos:
 	ansible-playbook --ask-become-pass ./ansible.macos.yml
 
-clone:
+dotfiles_private:
 	git clone https://github.com/edadaltocg/dotfiles.private.git
 
 build:
@@ -13,10 +13,9 @@ build:
 run:
 	docker run \
 		-it \
-		-v $(PWD)/v/home/dadalto/.zsh_history:/home/dadalto/.zsh_history \
-		-v $(PWD)/projects:/home/dadalto/projects \
-		-v $(PWD)/dotfiles:/home/dadalto/dotfiles \
-		-v $(PWD)/dotfiles.private:/home/dadalto/dotfiles.private \
+		-v $(PWD)/projects:/home/${USER}/projects \
+		-v $(PWD)/dotfiles:/home/${USER}/dotfiles \
+		-v $(PWD)/dotfiles.private:/home/${USER}/dotfiles.private \
 		--name dev \
 		dev-image
 
@@ -31,10 +30,26 @@ clean:
 	docker container rm dev
 
 all:
-	@make clone
+	@make dotfiles_private
 	@make clean
-	@make build 
+	@make build
 	@make run
 
 compose_up:
 	docker compose run dev dev id
+
+subrepo_dotfiles:
+	# git subrepo clone <repository> [<subdir>] [-b <branch>] [-f] [-m <msg>] [--file=<msg file>] [-e] [--method <merge|rebase>]
+	git subrepo clone https://github.com/edadaltocg/dotfiles \
+		dotfiles/ \
+		-b master \
+		-f
+
+subrepo_new:
+	# git subrepo init <subdir> [-r <remote>] [-b <branch>] [--method <merge|rebase>]
+
+subrepo_pull:
+	# git subrepo pull <subdir>|--all [-M|-R|-f] [-m <msg>] [--file=<msg file>] [-e] [-b <branch>] [-r <remote>] [-u]
+
+subrepo_push:
+	# git subrepo push <subdir>|--all [<branch>] [-m msg] [--file=<msg file>] [-r <remote>] [-b <branch>] [-M|-R] [-u] [-f] [-s] [-N]

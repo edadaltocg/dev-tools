@@ -71,6 +71,13 @@
             "go",
             "pipx",
             "zathura",
+            "pyenv",
+            "pipx",
+            "protobuf",
+            "yank",
+            "ncdu",
+            "jq",
+            "parallel",
           ]
         state: present
         update_homebrew: yes
@@ -136,3 +143,6 @@
       shell: docker pull ubuntu:latest
       tags:
         - docker
+
+    - name: Install git subrepo
+      shell: got clone https://github.com/ingydotnet/git-subrepo ~/git-subrepo
